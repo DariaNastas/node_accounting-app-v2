@@ -27,16 +27,22 @@ const post = (req, res) => {
   const { userId, spentAt, title, amount, category, note } = req.body;
 
   if (!(userId && spentAt && title && amount && category && note)) {
-    return res.status(400).end();
+    return res.status(400).send({ error: 'All fields are required' });
+  }
+
+  if (isNaN(amount) || amount <= 0) {
+    return res
+      .status(400)
+      .send({ error: 'Amount must be a valid number greater than 0' });
   }
 
   const user = userService.getById(userId);
 
   if (!user) {
-    return res.status(400).end();
+    return res.status(400).send({ error: 'User not found' });
   }
 
-  const person = expensesService.create(
+  const expense = expensesService.create(
     userId,
     spentAt,
     title,
@@ -45,7 +51,7 @@ const post = (req, res) => {
     note,
   );
 
-  res.status(201).send(person);
+  res.status(201).send(expense);
 };
 
 const remove = (req, res) => {

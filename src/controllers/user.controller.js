@@ -22,16 +22,17 @@ const getOne = (req, res) => {
 const post = (req, res) => {
   const { name } = req.body;
 
-  if (!name || !userService.create(name)) {
-    res.statusCode = 400;
-
-    return res.end();
+  if (!name) {
+    return res.status(400).send({ error: 'Name is required' });
   }
 
-  const person = userService.create(name);
+  const user = userService.create(name);
 
-  res.statusCode = 201;
-  res.send(person);
+  if (!user) {
+    return res.status(400).send({ error: 'User creation failed' });
+  }
+
+  res.status(201).send(user);
 };
 
 const remove = (req, res) => {
