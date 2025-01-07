@@ -4,7 +4,16 @@ const userService = require('./../services/user.service.js');
 const get = (req, res) => {
   const { userId, categories, from, to } = req.query;
 
-  res.status(200).send(expensesService.getAll(userId, categories, from, to));
+  const categoriesArray =
+    typeof categories === 'string' ? [categories] : categories;
+
+  if (categoriesArray && !Array.isArray(categoriesArray)) {
+    return res.status(400).send({ error: 'Categories must be an array' });
+  }
+
+  res
+    .status(200)
+    .send(expensesService.getAll(userId, categoriesArray, from, to));
 };
 
 const getOne = (req, res) => {
@@ -14,13 +23,13 @@ const getOne = (req, res) => {
     return res.status(400).end();
   }
 
-  const expenses = expensesService.getById(id);
+  const expense = expensesService.getById(id);
 
-  if (!expenses) {
+  if (!expense) {
     return res.status(404).end();
   }
 
-  res.status(200).send(expenses);
+  res.status(200).send(expense);
 };
 
 const post = (req, res) => {
@@ -30,7 +39,7 @@ const post = (req, res) => {
     return res.status(400).send({ error: 'All fields are required' });
   }
 
-  if (isNaN(amount) || amount <= 0) {
+  if (typeof amount !== 'number' || Number.isNaN(amount) || amount <= 0) {
     return res
       .status(400)
       .send({ error: 'Amount must be a valid number greater than 0' });
@@ -56,8 +65,9 @@ const post = (req, res) => {
 
 const remove = (req, res) => {
   const { id } = req.params;
+  const expense = expensesService.getById(id);
 
-  if (!expensesService.getById(id)) {
+  if (!expense) {
     return res.status(404).end();
   }
 
@@ -69,8 +79,9 @@ const remove = (req, res) => {
 const patch = (req, res) => {
   const { id } = req.params;
   const { title } = req.body;
+  const expense = expensesService.getById(id);
 
-  if (!expensesService.getById(id)) {
+  if (!expense) {
     return res.status(404).end();
   }
 
@@ -78,9 +89,9 @@ const patch = (req, res) => {
     return res.status(400).end();
   }
 
-  const user = expensesService.change(id, title);
+  const updatedExpense = expensesService.change(id, title);
 
-  res.status(200).send(user);
+  res.status(200).send(updatedExpense);
 };
 
 module.exports = {
